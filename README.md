@@ -6,3 +6,4 @@ The backbone of the model is [ResNeSt](https://github.com/zhanghang1989/ResNeSt)
 ## Training and Perforamnce
 ### Version 0 (current version)
 The model is trained using 8 different newspaper titles in the year of 1923. For each title 8 months are chosen randomly for training while the remaining 2 months are used for testing. The accuracy of the model (in terms of bAccuracy and F1) is above 99%.
+## Usage
