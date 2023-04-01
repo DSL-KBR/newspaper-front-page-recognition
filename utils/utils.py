@@ -1,5 +1,29 @@
+import cv2 as cv
+from PIL import Image, UnidentifiedImageError
+
+import torch
+from data.FPR_dataset import get_transform, imgH, imgW
+
 import os
 import time
+
+
+def read_image(img_path, img_path_web):
+    S_transform = get_transform(resize=[imgH, imgW])
+    img_bundle = []
+    for S_path, S_path_web in zip(img_path, img_path_web):
+        try:
+            S = Image.open(S_path)
+        except UnidentifiedImageError:
+            S = Image.fromarray(cv.imread(S_path))
+        S.resize([232, 310]).save(S_path_web, format='png')
+
+        S = torch.squeeze(S_transform(S))
+        if len(S.shape) == 2:
+            S = torch.stack([S, S, S], 0)
+        img_bundle.append(S)
+
+    return {'Sample': torch.stack(img_bundle), 'Label': torch.tensor(-1), 'Path': [], 'Metadata': []}
 
 
 # A simple loss logger

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Library Images</title>
+	<script>
+		function timedRefresh(timeoutPeriod) {
+			setTimeout("location.reload(true);",timeoutPeriod);
+		}
+		window.onload = timedRefresh(5000);
+	</script>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #f5f5f5;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		header {
+			background-color: #282828;
+			color: #fff;
+			padding: 5px;
+			text-align: center;
+			font-size: 15px;
+		}
+
+		.container {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-around;
+			align-items: center;
+			padding: 10px;
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+
+		.row {
+			display: flex;
+			flex-wrap: nowrap;
+			justify-content: flex-start;
+			align-items: center;
+			margin-bottom: 2px;
+		}
+
+		.column {
+			flex-shrink: 0;
+			width: auto;
+			padding: 0 2px;
+			box-sizing: border-box;
+			overflow: hidden;
+			text-align: center;
+			cursor: pointer;
+		}
+
+		.column img {
+			display: block;
+			margin: 0 auto;
+			max-width: 100%;
+			width: 232px;
+			height: 310px;
+		}
+
+		.scroll-container {
+			overflow-x: scroll;
+			white-space: nowrap;
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<h1>Newspaper Front Page Recognition</h1>
+		<p>&#9888; For internal testing purpose &#64; KBR DSL</p>
+	</header>
+
+	<div class="container">
+		<div class="scroll-container">
+			<div class="row" id="front-page-row">
+				{% for file_name in front_pages %}
+				<div class="column">
+					<img src="{{ url_for('serve_image', filename=file_name) }}" alt="{{ file_name }}">
+					<p>front page</p>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+
+		<div class="scroll-container">
+			<div class="row" id="non-front-page-row">
+				{% for file_name in non_front_pages %}
+				<div class="column">
+					<img src="{{ url_for('serve_image', filename=file_name) }}" alt="{{ file_name }}">
+					<p>not a front page</p>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</body>
+</html>

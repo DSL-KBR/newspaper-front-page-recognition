@@ -7,7 +7,7 @@ Backbone model: ResNeSt https://github.com/zhanghang1989/ResNeSt
 Code developed on top of the framework published by cycleGAN https://github.com/junyanz/CycleGAN
 
 Written by the KBR Data Science Lab https://www.kbr.be/en/projects/data-science-lab/
-Published at
+Published at https://github.com/DSL-KBR/newspaper-front-page-recognition
 """
 
 import os
@@ -22,12 +22,12 @@ from data.FPR_dataset import FPRDataset, FPRDataLoader
 from models.FPR_ResNeSt import FPRNet
 
 from utils.utils import Logger
-from utils.train_test import evaluation_metric, evaluation_visual
+from utils.train_test import evaluation_metric
 
 parser = argparse.ArgumentParser(description='Font Page Recognition (FPR) of historical newspapers')
 
 parser.add_argument('--model_name', default='FPR_ResNeSt', type=str, help='name of the model')
-parser.add_argument('--dir_data', default=r'D:\DSL\Datasets\Raw\Newspaper\8_titles_12_months_1923', type=str,
+parser.add_argument('--dir_data', default=[], type=str,
                     help='dir where to retrieve train and test data')
 parser.add_argument('--dir_checkpoints', default=r'./checkpoints', type=str, help='dir for logging')
 
@@ -148,9 +148,6 @@ if __name__ == '__main__':
             testGT = np.array(FPRTest.label)
             testPred = -1 * np.ones(dataloaderTest.__len__())
 
-            testAttackLocation = [[] for _ in range(0, dataloaderTest.__len__())]
-            error_run = []
-
             """
             in this for loop, all test data will be pushed through the trained network and the prediction
             as well as sample information will be collected
@@ -166,7 +163,6 @@ if __name__ == '__main__':
                 batchMonth = np.array(model.metadata['Month'])
                 batchDate = np.array(model.metadata['Date'])
                 batchPage = np.array(model.metadata['Page'])
-                batchAttackLocation = data['Sample_augment_location']
 
                 # retrieve prediction from the model
                 batchPred = torch.nn.functional.softmax(model.pred, dim=1)
@@ -178,19 +174,6 @@ if __name__ == '__main__':
                     testPred[(testIDN == batchIDN[j]) &
                              (testYear == batchYear[j]) & (testMonth == batchMonth[j]) & (testDate == batchDate[j]) &
                              (testPage == batchPage[j])] = batchPred[j]
-                    testAttackLocation[np.where((testIDN == batchIDN[j]) &
-                                                (testYear == batchYear[j]) & (testMonth == batchMonth[j]) & (
-                                                        testDate == batchDate[j]) &
-                                                (testPage == batchPage[j]))[0][0]] = batchAttackLocation[j]
-                    try:
-                        if batchPred[j] != testGT[(testIDN == batchIDN[j])
-                                                  & (testYear == batchYear[j])
-                                                  & (testMonth == batchMonth[j])
-                                                  & (testDate == batchDate[j])
-                                                  & (testPage == batchPage[j])]:
-                            evaluation_visual(model=model, save_dir=dir_independent_test)
-                    except:
-                        error_run.append(j)
 
             # check that all samples are being processed
             if any(testPred == -1):
@@ -243,20 +226,6 @@ if __name__ == '__main__':
                               f"AttackLocation: {testAttackLocation[errSample]}"
                     with open(result_independent_test, "a") as log_file:
                         log_file.write(message)
-                if len(error_run) > 0:
-                    with open(result_independent_test, "a") as log_file:
-                        log_file.write('\n%s \n\n' % "***Running Error ***\n")
-                    for errSample in error_run:
-                        message = f"\nTitleIDN: {testIDN[errSample]} \n" \
-                                  f"Year: {testYear[errSample]}\n" \
-                                  f"Month: {testMonth[errSample]}\n" \
-                                  f"Date: {testDate[errSample]}\n" \
-                                  f"Page: {testPage[errSample]}\n" \
-                                  f"GT: {testGT[errSample]}\n" \
-                                  f"Prediction: {testPred[errSample]}\n" \
-                                  f"AttackLocation: {testAttackLocation[errSample]}"
-                        with open(result_independent_test, "a") as log_file:
-                            log_file.write(message)
 
         else:  # normal training
             model.setup(niter=args.niter, niter_decay=args.niter_decay, epoch=epoch_count - 1)

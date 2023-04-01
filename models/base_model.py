@@ -13,7 +13,7 @@ class BaseModel(nn.Module):
         super().__init__()
         self.device = torch.device('cuda:{}'.format(gpu_ids[0])) if gpu_ids else torch.device('cpu')
         self.gpu_ids = gpu_ids
-        self.save_dir = os.path.join(checkpoints_dir, model_name)
+        self.save_dir = os.path.join(os.path.abspath(checkpoints_dir), model_name)
 
         self.isTrain = isTrain
 
@@ -25,7 +25,7 @@ class BaseModel(nn.Module):
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
 
-    def setup(self, niter, niter_decay, load_iter=0, epoch=0, printnetwork=True):
+    def setup(self, niter=0, niter_decay=0, load_iter=0, epoch=0, printnetwork=True):
         """Load and print networks; create schedulers
         """
         if self.isTrain:
