@@ -1,4 +1,6 @@
-"""Split-Attention"""
+"""
+Code is adopted from ResNeSt https://github.com/zhanghang1989/ResNeSt
+"""
 
 import torch
 from torch import nn

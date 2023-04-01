@@ -1,14 +1,3 @@
-""" Dataset and DataLoader
-Load data from a single folder
-Return:
-    { A, A_paths, A_label}
-This dataset will be used when testing the network
-"""
-
-import torch
-import torch.utils.data as data
-
-from PIL import Image
 import os.path
 import re
 import numpy as np
@@ -22,7 +11,14 @@ SPLIT_METHODS = ['i', 'y', 'm', 'd']
 
 def sample_query(sample):
     """
-    This function retrives metadata information from an image sample
+    This function retrives metadata information from the name of an image sample.
+
+    !!! The name of the images should follow the following format!!!
+    BE_KBR00_IDN_YearMonthDate_xx_xx_xx_x_xx_PageNumber_xxxxxxx, e.g.
+    BE-KBR00_15981364_19230101_00_01_00_1_01_0001_11880779
+    PageNumber 1 indicates a front page
+
+    For images with different naming, this function should be adpated
     """
 
     samplemetadata = {'IDN': -1, 'Year': -1, 'Month': -1, 'Date': -1, 'Page': -1}
@@ -69,8 +65,7 @@ def sample_query(sample):
 
 class FPRDataRegister:
 
-    def __init__(self, datadir, splitindicator='m', splitseed=-1, test_ratio=0.2,
-                 attack_dir='', attack_location=[]):
+    def __init__(self, datadir, splitindicator='m', splitseed=-1, test_ratio=0.2):
         """
         -- datadir: point to a directory
         -- splitindicator: train and test is splited on
@@ -91,13 +86,6 @@ class FPRDataRegister:
             np.random.seed(splitseed)
 
         self.test_ratio = test_ratio
-        if os.path.isdir(attack_dir):
-            self.attack_dir = attack_dir
-            self.attack_location = attack_location
-            # # specific locations for attacking
-            # attack_location.extend(random.sample(range(0, 16), 5))
-            # self.attack_location = set(attack_location)
-
         self.map_dataset()
 
     def map_dataset(self):
@@ -142,15 +130,10 @@ class FPRDataRegister:
         self.titleIDN = np.unique(imgIDN).tolist()
 
         if self.splitindicator == 'i':
-            # doctitleIDN = self.titleIDN    # which titles are present
-            # doctitleTestIndex = np.random.permutation(len(doctitleIDN))
-            # doctitleTestIndex = doctitleTestIndex[0:np.max[1, np.floor(0.2 * len(doctitleTestIndex))]]
-            # doctitleTest = doctitleIDN[doctitleTestIndex]
-            # traintestlabel[np.isin(imgIDN, doctitleTest)] = 1
             raise NotImplementedError('spliting based on titles is not implemented')
         elif self.splitindicator == 'y':
             raise NotImplementedError('spliting based on year is not implemented')
-        elif self.splitindicator == 'm':
+        elif self.splitindicator == 'm':  # cautions, only for months from one year, otherwise the implementation below needs to be udpated
             for doctitle in self.titleIDN:
                 doctitleMon = np.unique(imgMonth[imgIDN == doctitle])   # which months are present for this doctitle
                 doctitleMonTestIndex = np.random.permutation(len(doctitleMon))
@@ -179,23 +162,6 @@ class FPRDataRegister:
         self.testidx = np.squeeze(np.where(traintestlabel == 1))
         traintestsummary.append({'OverallTrainRatio': len(self.trainidx) / (len(self.trainidx) + len(self.testidx))})
         self.traintestmetadata = traintestsummary
-
-        # compile attacking images
-        error = []
-        if hasattr(self, 'attack_dir'):
-            attack_dir = []
-            for root, directions, fnames in sorted(os.walk(self.attack_dir)):
-                if fnames.__len__() == 0:
-                    continue
-                else:
-                    for fname in fnames:
-                        if is_image_file(fname):
-                            path = os.path.join(root, fname)
-                            img = Image.open(path)
-                            if img.mode == 'RGB':
-                                attack_dir.append(path)
-
-            self.attack_dir = attack_dir
 
 
 def is_image_file(filename):

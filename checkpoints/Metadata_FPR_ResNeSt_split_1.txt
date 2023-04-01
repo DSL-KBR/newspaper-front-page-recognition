@@ -1,0 +1,121 @@
+=== FPR_ResNeSt Metadata for Training/Testing (Sat Apr  1 13:58:49 2023) ===
+ 
+
+Title IDN: 15981364
+
+Training:
+Month: [1, 2, 5, 6, 7, 8, 9, 10, 11, 12];
+FrontPage: 258;
+TotalPage: 1656;
+TrainRatio: 0.803. 
+
+Testing:
+Month: [3, 4];
+FrontPage: 53;
+TotalPage: 406;
+TestRatio: 0.197. 
+
+
+Title IDN: 16343920
+
+Training:
+Month: [1, 3, 4, 5, 6, 7, 9, 10, 11, 12];
+FrontPage: 295;
+TotalPage: 1820;
+TrainRatio: 0.841. 
+
+Testing:
+Month: [2, 8];
+FrontPage: 58;
+TotalPage: 344;
+TestRatio: 0.159. 
+
+
+Title IDN: 16411586
+
+Training:
+Month: [1, 2, 3, 4, 5, 7, 8, 9, 10, 11];
+FrontPage: 295;
+TotalPage: 1180;
+TrainRatio: 0.833. 
+
+Testing:
+Month: [12, 6];
+FrontPage: 59;
+TotalPage: 236;
+TestRatio: 0.167. 
+
+
+Title IDN: 17159617
+
+Training:
+Month: [1, 2, 3, 4, 5, 6, 8, 10, 11, 12];
+FrontPage: 255;
+TotalPage: 1572;
+TrainRatio: 0.826. 
+
+Testing:
+Month: [7, 9];
+FrontPage: 52;
+TotalPage: 332;
+TestRatio: 0.174. 
+
+
+Title IDN: 17164874
+
+Training:
+Month: [1, 2, 4, 5, 6, 7, 8, 9, 10, 12];
+FrontPage: 43;
+TotalPage: 344;
+TrainRatio: 0.843. 
+
+Testing:
+Month: [3, 11];
+FrontPage: 8;
+TotalPage: 64;
+TestRatio: 0.157. 
+
+
+Title IDN: 17165064
+
+Training:
+Month: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12];
+FrontPage: 260;
+TotalPage: 1246;
+TrainRatio: 0.828. 
+
+Testing:
+Month: [8, 10];
+FrontPage: 54;
+TotalPage: 258;
+TestRatio: 0.172. 
+
+
+Title IDN: 17172097
+
+Training:
+Month: [1, 2, 3, 4, 7, 8, 9, 10, 11, 12];
+FrontPage: 298;
+TotalPage: 1552;
+TrainRatio: 0.83. 
+
+Testing:
+Month: [6, 5];
+FrontPage: 59;
+TotalPage: 318;
+TestRatio: 0.17. 
+
+
+Title IDN: 17229173
+
+Training:
+Month: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12];
+FrontPage: 296;
+TotalPage: 1564;
+TrainRatio: 0.833. 
+
+Testing:
+Month: [11, 9];
+FrontPage: 57;
+TotalPage: 314;
+TestRatio: 0.167. 

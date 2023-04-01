@@ -1,12 +1,5 @@
-""" Dataset and DataLoader
-Load data from a single folder
-Return:
-    { A, A_paths, A_label}
-This dataset will be used when testing the network
-"""
 import cv2 as cv
 from PIL import Image, UnidentifiedImageError
-import random
 
 import torch
 import torch.utils.data as data
@@ -14,11 +7,9 @@ import torchvision.transforms as transforms
 
 from data.base_dataset import FPRDataRegister, sample_query
 
-# images are resized to fit the below dimensions
+# images are resized to fit the following dimensions
 imgH = 1024
 imgW = 1024
-gridX = torch.arange(start=0, step=imgW/4, end=imgW+1).long()
-gridY = torch.arange(start=0, step=imgH/4, end=imgH+1).long()
 
 
 class FPRDataLoader:
@@ -45,11 +36,6 @@ class FPRDataLoader:
 
 
 class FPRDataset(data.Dataset):
-    """Loading images
-    -- <__init__>:                      initialize the class
-    -- <__len__>:                       return the size of dataset.
-    -- <__getitem__>:                   get a data point.
-    """
 
     def __init__(self, DataRegister, mode='train'):
         """
@@ -57,21 +43,12 @@ class FPRDataset(data.Dataset):
         -- mode: train or test
         """
 
-        assert isinstance(DataRegister, FPRDataRegister), 'FPRDataRegister is missing'
+        assert isinstance(DataRegister, FPRDataRegister), 'FPRDataRegister must be applied first ' \
+                                                          'before a FPR datase can be created'
 
         imgmetadata = DataRegister.imgmetadata
         datasetdir = DataRegister.imgdir
         self.S_transform = get_transform(resize=[imgH, imgW])
-
-        if hasattr(DataRegister, 'attack_dir'):
-            self.attack_dir = DataRegister.attack_dir
-            self.attack_transform = transforms.Compose([
-                transforms.Resize([256,256], Image.BICUBIC),
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                )])
-            self.attack_location = DataRegister.attack_location
 
         if mode == 'train':
             traintestidx = DataRegister.trainidx
@@ -92,6 +69,7 @@ class FPRDataset(data.Dataset):
         if len(S.shape) == 2:
             S = torch.stack([S, S, S], 0)
 
+        # completely paranoid coding below
         label = self.label[index]
         metadata = self.metadata[index]
         if label == 0:
@@ -99,31 +77,7 @@ class FPRDataset(data.Dataset):
         if label == 1:
             assert metadata['Page'] == 1, f"{self.metadata[index]} is wrongly registered as a non front page"
 
-        # creating S_augment by attacking S using S_attack
-        S_augment = S.detach().clone()
-        attack_location_sampling = []
-        if hasattr(self, 'attack_dir'):
-            attack_location_sampling = self.attack_location.copy()
-            num_add_samples = 5 - len(attack_location_sampling)
-            while num_add_samples > 0:
-                attack_location_sampling.extend(random.sample(range(0, 16), num_add_samples))
-                attack_location_sampling = set(attack_location_sampling)
-                num_add_samples = 5 - len(attack_location_sampling)
-
-            attack_location_sampling = torch.as_tensor(list(attack_location_sampling))
-            for attack_location in attack_location_sampling:
-                # first pick an attacking image
-                attack_path = self.attack_dir[random.sample(range(0, len(self.attack_dir)), 1)[0]]
-                S_attack = self.attack_transform(Image.open(attack_path))
-                if S_attack.shape[0] == 1 or len(S_attack) == 2:
-                    print('error')
-                # attack sample image at attack_location
-                location_y = torch.div(attack_location, 4, rounding_mode='floor')
-                location_x = attack_location % 4
-                S_augment[:, gridY[location_y]:gridY[location_y + 1], gridX[location_x]:gridX[location_x + 1]] = S_attack
-
-        return {'Sample': S, 'Label': label, 'Path': S_path, 'Metadata': metadata,
-                'Sample_augment': S_augment, 'Sample_augment_location': attack_location_sampling}
+        return {'Sample': S, 'Label': label, 'Path': S_path, 'Metadata': metadata}
 
     def __len__(self):
         return len(self.label)

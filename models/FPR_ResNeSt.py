@@ -10,7 +10,6 @@ class FPRNet(BaseModel):
     def __init__(self, checkpoints_dir, model_name, num_class=2, isTrain=True, gpu_ids=[]):
 
         super().__init__(checkpoints_dir=checkpoints_dir, model_name=model_name, isTrain=isTrain, gpu_ids=gpu_ids)
-        self.visual_names = ['FPRinputs']
         self.model_names = ['ResNeSt', 'Classifier']
         self.num_class = num_class
         self.loss_names = ['pred']
@@ -34,7 +33,7 @@ class FPRNet(BaseModel):
 
     def set_input(self, inputs):
 
-        self.sample = inputs['Sample_augment'].to(self.device)
+        self.sample = inputs['Sample'].to(self.device)
         self.label = inputs['Label'].to(self.device)
         self.metadata = inputs['Metadata']
 

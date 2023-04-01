@@ -20,7 +20,6 @@ class BaseModel(nn.Module):
         self.loss_names = []
         self.model_names = []
         self.optimizers = []
-        self.visual_names = []
         self.image_paths = []
 
         if not os.path.exists(self.save_dir):
@@ -39,33 +38,6 @@ class BaseModel(nn.Module):
         if printnetwork:
             self.print_networks()
 
-    def get_scheduler(self, optimizer, lr_policy, niter, niter_decay, lr_decay_iters=50):
-        """Return a learning rate scheduler
-
-        Parameters:
-            optimizer          -- the optimizer of the network
-
-        For 'linear', we keep the same learning rate for the first <niter> epochs
-        and linearly decay the rate to zero over the next <niter_decay> epochs.
-        For other schedulers (step, plateau, and cosine), we use the default PyTorch schedulers.
-        See https://pytorch.org/docs/stable/optim.html for more details.
-        """
-        if lr_policy == 'linear':
-            def lambda_rule(epoch):
-                lr_l = 1.0 - max(0, epoch + 1 - niter) / float(niter_decay + 1)
-                return lr_l
-
-            scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda_rule)
-        elif lr_policy == 'step':
-            scheduler = lr_scheduler.StepLR(optimizer, step_size=lr_decay_iters, gamma=0.1)
-        elif lr_policy == 'plateau':
-            scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, threshold=0.01, patience=5)
-        elif lr_policy == 'cosine':
-            scheduler = lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=20, T_mult=2, eta_min=0)
-        else:
-            return NotImplementedError('learning rate policy [%s] is not implemented', lr_policy)
-        return scheduler
-
     def eval(self):
         """Make models eval mode during test time"""
         for name in self.model_names:
@@ -82,27 +54,6 @@ class BaseModel(nn.Module):
         with torch.no_grad():
             self.forward()
 
-    def set_requires_grad(self, nets, requires_grad=False):
-        """Set requies_grad=Fasle for all the networks to avoid unnecessary computations
-        Parameters:
-            nets (network list)   -- a list of networks
-            requires_grad (bool)  -- whether the networks require gradients or not
-        """
-        if not isinstance(nets, list):
-            nets = [nets]
-        for net in nets:
-            if net is not None:
-                for param in net.parameters():
-                    param.requires_grad = requires_grad
-
-    def compute_visuals(self):
-        """Calculate additional output images for visdom and HTML visualization"""
-        pass
-
-    def get_image_paths(self):
-        """ Return image paths that are used to load current data"""
-        return self.image_paths
-
     def update_learning_rate(self, epoch_lr=None):
         """Update learning rates for all the networks; called at the end of every epoch"""
         if epoch_lr is not None:
@@ -116,14 +67,6 @@ class BaseModel(nn.Module):
         for i in torch.arange(0, len(self.optimizers)):
             lr = self.optimizers[i].param_groups[0]['lr']
             print(self.model_names[i], ': learning rate = %.7f' % lr)
-
-    def get_current_visuals(self):
-        """Return visualization images. train.py will display these images with visdom, and save the images to a HTML"""
-        visual_ret = OrderedDict()
-        for name in self.visual_names:
-            if isinstance(name, str):
-                visual_ret[name] = getattr(self, name)
-        return visual_ret
 
     def get_current_losses(self):
         """Return traning losses / errors. train.py will print out these errors on console, and save them to a file"""
@@ -194,3 +137,39 @@ class BaseModel(nn.Module):
                 print(net)
                 print('[Network %s] Total number of parameters : %.3f M' % (name, num_params / 1e6))
         print('-----------------------------------------------')
+
+    @staticmethod
+    def get_scheduler(optimizer, lr_policy, niter, niter_decay):
+        """Return a linear learning rate scheduler
+
+        Parameters:
+            optimizer          -- the optimizer of the network
+
+        For 'linear', we keep the same learning rate for the first <niter> epochs
+        and linearly decay the rate to zero over the next <niter_decay> epochs.
+        For other schedulers (step, plateau, and cosine), we use the default PyTorch schedulers.
+        See https://pytorch.org/docs/stable/optim.html for more details.
+        """
+        if lr_policy == 'linear':
+            def lambda_rule(epoch):
+                lr_l = 1.0 - max(0, epoch + 1 - niter) / float(niter_decay + 1)
+                return lr_l
+
+            scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda_rule)
+        else:
+            return NotImplementedError('learning rate policy [%s] is not implemented', lr_policy)
+        return scheduler
+
+    @staticmethod
+    def set_requires_grad(nets, requires_grad=False):
+        """Set requies_grad=Fasle for all the networks to avoid unnecessary computations
+        Parameters:
+            nets (network list)   -- a list of networks
+            requires_grad (bool)  -- whether the networks require gradients or not
+        """
+        if not isinstance(nets, list):
+            nets = [nets]
+        for net in nets:
+            if net is not None:
+                for param in net.parameters():
+                    param.requires_grad = requires_grad

@@ -1,11 +1,7 @@
-##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Created by: Hang Zhang
-## Email: zhanghang0704@gmail.com
-## Copyright (c) 2020
-##
-## LICENSE file in the root directory of this source tree 
-##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-"""ResNet variants"""
+"""
+Code is adopted from ResNeSt https://github.com/zhanghang1989/ResNeSt
+"""
+
 import math
 import torch
 import torch.nn as nn
@@ -17,7 +13,7 @@ __all__ = ['ResNet', 'Bottleneck']
 _url_format = 'https://s3.us-west-1.wasabisys.com/resnest/torch/{}-{}.pth'
 
 _model_sha256 = {name: checksum for checksum, name in [
-    ]}
+]}
 
 
 def short_hash(name):
@@ -25,9 +21,11 @@ def short_hash(name):
         raise ValueError('Pretrained model for {name} is not available.'.format(name=name))
     return _model_sha256[name][:8]
 
+
 resnest_model_urls = {name: _url_format.format(name, short_hash(name)) for
-    name in _model_sha256.keys()
-}
+                      name in _model_sha256.keys()
+                      }
+
 
 class GlobalAvgPool2d(nn.Module):
     def __init__(self):
@@ -37,11 +35,13 @@ class GlobalAvgPool2d(nn.Module):
     def forward(self, inputs):
         return nn.functional.adaptive_avg_pool2d(inputs, 1).view(inputs.size(0), -1)
 
+
 class Bottleneck(nn.Module):
     """ResNet Bottleneck
     """
     # pylint: disable=unused-argument
     expansion = 4
+
     def __init__(self, inplanes, planes, stride=1, downsample=None,
                  radix=1, cardinality=1, bottleneck_width=64,
                  avd=False, avd_first=False, dilation=1, is_first=False,
@@ -92,7 +92,7 @@ class Bottleneck(nn.Module):
 
         self.conv3 = nn.Conv2d(
             group_width, planes * 4, kernel_size=1, bias=False)
-        self.bn3 = norm_layer(planes*4)
+        self.bn3 = norm_layer(planes * 4)
 
         if last_gamma:
             from torch.nn.init import zeros_
@@ -137,6 +137,7 @@ class Bottleneck(nn.Module):
 
         return out
 
+
 class ResNet(nn.Module):
     """ResNet Variants
 
@@ -161,6 +162,7 @@ class ResNet(nn.Module):
 
         - Yu, Fisher, and Vladlen Koltun. "Multi-scale context aggregation by dilated convolutions."
     """
+
     # pylint: disable=unused-variable
     def __init__(self, block, layers, radix=1, groups=1, bottleneck_width=64,
                  num_classes=1000, dilated=False, dilation=1,
@@ -172,7 +174,7 @@ class ResNet(nn.Module):
         self.cardinality = groups
         self.bottleneck_width = bottleneck_width
         # ResNet-D params
-        self.inplanes = stem_width*2 if deep_stem else 64
+        self.inplanes = stem_width * 2 if deep_stem else 64
         self.avg_down = avg_down
         self.last_gamma = last_gamma
         # ResNeSt params
@@ -197,11 +199,11 @@ class ResNet(nn.Module):
                 conv_layer(stem_width, stem_width, kernel_size=3, stride=1, padding=1, bias=False, **conv_kwargs),
                 norm_layer(stem_width),
                 nn.ReLU(inplace=True),
-                conv_layer(stem_width, stem_width*2, kernel_size=3, stride=1, padding=1, bias=False, **conv_kwargs),
+                conv_layer(stem_width, stem_width * 2, kernel_size=3, stride=1, padding=1, bias=False, **conv_kwargs),
             )
         else:
             self.conv1 = conv_layer(3, 64, kernel_size=7, stride=2, padding=3,
-                                   bias=False, **conv_kwargs)
+                                    bias=False, **conv_kwargs)
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -214,7 +216,7 @@ class ResNet(nn.Module):
             self.layer4 = self._make_layer(block, 512, layers[3], stride=1,
                                            dilation=4, norm_layer=norm_layer,
                                            dropblock_prob=dropblock_prob)
-        elif dilation==2:
+        elif dilation == 2:
             self.layer3 = self._make_layer(block, 256, layers[2], stride=2,
                                            dilation=1, norm_layer=norm_layer,
                                            dropblock_prob=dropblock_prob)
@@ -313,4 +315,3 @@ class ResNet(nn.Module):
         x = self.fc(x)
 
         return x
-
