@@ -34,3 +34,4 @@ parameters in FPRapp_init.py should be adapted according to the conducted traini
 FPRapp_init.py
 ```
 ![A pretrained FPR model will be loaded *by default from ./checkpoints/training/model_name/training_seed/*. Images that are deposited in a specified folder *by default ./FPR testing local* will be processed and the results will be displayed on a webpage](img/demo_1.PNG)
+Sample newspaper images hosted in this repository are subject to license requirement. [Please refer to the instructions here.](https://www.belgicapress.be/)
